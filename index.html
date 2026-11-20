@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>A레벨 학교 노트</title>
+<style>
+  :root{
+    --bg:#f2f4f8; --card:#ffffff; --ink:#14202e; --sub:#5b6b7f;
+    --line:#e2e7ef; --accent:#2563eb; --accent-soft:#e8f0ff;
+    --good:#0f9d58; --warn:#d97706; --shadow:0 6px 20px rgba(20,32,46,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0d131b; --card:#151e29; --ink:#eef3f9; --sub:#9aabbd;
+      --line:#243040; --accent:#5b93ff; --accent-soft:#1b2b45; --shadow:0 6px 20px rgba(0,0,0,.4);}
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;
+    line-height:1.5; padding-bottom:40px;
+  }
+  a{text-decoration:none; color:inherit;}
+  header{padding:20px 18px 8px;}
+  h1{font-size:21px; margin:0 0 5px; letter-spacing:-.4px;}
+  .lead{font-size:12.5px; color:var(--sub); margin:0;}
+  .tabs{display:flex; flex-wrap:wrap; gap:8px; padding:12px 14px 8px;}
+  .tab{
+    flex:1 1 40%; text-align:center; padding:9px 0; font-size:13px; font-weight:700;
+    color:var(--sub); background:var(--card); border:1px solid var(--line);
+    border-radius:11px;
+  }
+  main{padding:4px 12px 0;}
+  .card{
+    display:block; background:var(--card); border:1px solid var(--line);
+    border-radius:16px; padding:14px 15px; margin:10px 0; box-shadow:var(--shadow);
+  }
+  .card:active{opacity:.85;}
+  .card .top{display:flex; align-items:center; gap:8px;}
+  .card h2{font-size:16px; margin:0; letter-spacing:-.3px; flex:1;}
+  .price{font-size:13px; font-weight:800; color:var(--accent); white-space:nowrap;}
+  .card p{font-size:12.5px; color:var(--sub); margin:6px 0 0;}
+  .chips{margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;}
+  .chip{
+    display:inline-block; font-size:11px; font-weight:700; padding:2px 8px;
+    border-radius:999px; background:var(--accent-soft); color:var(--accent);
+  }
+  .chip.gray{background:rgba(120,140,160,.16); color:var(--sub);}
+  .chip.good{background:rgba(15,157,88,.14); color:var(--good);}
+  .chip.warn{background:rgba(217,119,6,.16); color:var(--warn);}
+  .sectionTitle{font-size:12px; font-weight:800; color:var(--sub); letter-spacing:.6px; margin:18px 4px 6px;}
+  table{width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; font-size:12.5px;}
+  th,td{padding:10px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{font-size:11.5px; color:var(--sub); background:rgba(120,140,160,.08); font-weight:700;}
+  tr:last-child td{border-bottom:0;}
+  .note{font-size:12px; color:var(--sub); margin:10px 4px;}
+  .rowcard{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:13px 14px; margin:0 0 10px;
+  }
+  .rowcard .k{font-size:11.5px; font-weight:800; color:var(--accent); letter-spacing:.4px; margin-bottom:3px;}
+  .rowcard .v{font-size:13.5px;}
+  ul.clean{margin:6px 0 0; padding-left:18px; font-size:13.5px;}
+  ul.clean li{margin:4px 0;}
+  .foot{font-size:11.5px; color:var(--sub); margin:16px 4px; line-height:1.6;}
+  .back{display:inline-block; background:var(--accent-soft); color:var(--accent);
+    font-weight:800; font-size:13px; padding:8px 13px; border-radius:10px; margin:10px 0 4px;}
+  .backtop{display:block; text-align:center; color:var(--sub); font-size:12.5px; margin:26px 0 0; padding:10px;}
+
+  /* --- 뷰 전환 (스크립트 없이) --- */
+  #compare, #exam, #subject, #papers, .detail{display:none;}
+  #compare:target, #exam:target, #subject:target, #papers:target, .detail:target{display:block;}
+  body:has(#compare:target) #schools,
+  body:has(#exam:target) #schools,
+  body:has(#subject:target) #schools,
+  body:has(#papers:target) #schools,
+  body:has(.detail:target) #schools,
+  body:has(.detail:target) #compare,
+  body:has(.detail:target) #exam,
+  body:has(.detail:target) #subject,
+  body:has(.detail:target) #papers{display:none;}
+  /* 학교 상세가 열리면 제목만 남김 */
+  body:has(.detail:target) .tabs{display:none;}
+</style>
+</head>
+<body>
+<a id="top"></a>
+
+<header>
+  <h1>🎓 A레벨 학교 노트</h1>
+  <p class="lead">수학 · 생물 · 경제 / 3과목 기준 · 2026-11-20 조사</p>
+</header>
+
+<nav class="tabs">
+  <a class="tab" href="#schools">학교</a>
+  <a class="tab" href="#compare">비교표</a>
+  <a class="tab" href="#exam">시험 보는 곳</a>
+  <a class="tab" href="#subject">과목·비용</a>
+  <a class="tab" href="#papers">기출문제</a>
+</nav>
+
+<main>
+
+<section id="schools">
+  <a class="card" href="#s-highgrove">
+    <div class="top"><h2>하이그로브 에듀케이션</h2><span class="price">2년 4,120만</span></div>
+    <p>전 과목 Edexcel IAL · 성적 최고</p>
+    <div class="chips"><span class="chip good">추천</span><span class="chip">A* 50%</span></div>
+  </a>
+  <a class="card" href="#s-kings">
+    <div class="top"><h2>킹스 인터하이</h2><span class="price">연 1,331만</span></div>
+    <p>실시간 수업 주 6시간 · 동남아 시간표</p>
+    <div class="chips"><span class="chip">실시간 수업</span><span class="chip">보드 혼합</span></div>
+  </a>
+  <a class="card" href="#s-wolsey">
+    <div class="top"><h2>월지 홀 옥스퍼드</h2><span class="price">2년 813만</span></div>
+    <p>자습 + 1:1 튜터 첨삭 · 가장 저렴</p>
+    <div class="chips"><span class="chip good">가장 저렴</span><span class="chip gray">라이브 없음</span></div>
+  </a>
+  <a class="card" href="#s-minerva">
+    <div class="top"><h2>미네르바 버추얼</h2><span class="price">연 1,640만</span></div>
+    <p>플립러닝 · 반 22명 이하 · 영국 시간</p>
+    <div class="chips"><span class="chip warn">원격감독 가능 주장</span></div>
+  </a>
+  <a class="card" href="#s-chs">
+    <div class="top"><h2>캠브리지 홈스쿨</h2><span class="price">연 1,922만</span></div>
+    <p>CAIE 전용 · 과학 실기는 센터 필요</p>
+    <div class="chips"><span class="chip gray">1월 시험 없음</span></div>
+  </a>
+  <a class="card" href="#s-nec">
+    <div class="top"><h2>NEC</h2><span class="price">2년 386만</span></div>
+    <p>단과 자습형 · 1:1 튜터 24개월</p>
+    <div class="chips"><span class="chip good">가장 경제적</span></div>
+  </a>
+  <p class="note">학교를 누르면 학비·시간표·시험·입학 조건이 펼쳐집니다.</p>
+</section>
+
+<section id="compare">
+  <div class="sectionTitle">한눈에 비교</div>
+  <table>
+    <tr><th>학교</th><th>2년 학비</th><th>수업</th><th>시험</th></tr>
+    <tr><td>NEC</td><td>386만</td><td>자습·튜터</td><td>Edexcel</td></tr>
+    <tr><td>월지 홀</td><td>813만</td><td>자습·첨삭</td><td>CAIE</td></tr>
+    <tr><td>킹스 인터하이</td><td>2,660만</td><td>주 6시간</td><td>CAIE+Edexcel</td></tr>
+    <tr><td>미네르바</td><td>3,280만</td><td>하루 2~3회</td><td>Edexcel 등</td></tr>
+    <tr><td>캠브리지 홈스쿨</td><td>3,840만</td><td>영국 낮</td><td>CAIE만</td></tr>
+    <tr><td>하이그로브</td><td>4,120만</td><td>주 2회 45분</td><td>Edexcel</td></tr>
+  </table>
+  <p class="note">응시료는 학비에 포함되지 않습니다. 국내 기준 3과목 18유닛 약 302만 원(KII 요율)이 따로 붙습니다.</p>
+  <a class="backtop" href="#top">목록으로 돌아가기</a>
+</section>
+
+<section id="exam">
+  <div class="sectionTitle">시험 경로</div>
+  <div class="rowcard"><div class="k">서울 센터 · KTX 3시간 30분</div>
+    <div class="v">YMK 서초 · KII 역삼 · edm 강남. KII 공개 요율 유닛당 16.8만 원, 3과목 18유닛 약 302만 원.</div></div>
+  <div class="rowcard"><div class="k">원격감독(RIS) · 한국 미확정</div>
+    <div class="v">집에서 응시. 피어슨은 한국 제공을 보장하지 못한다고 답했고, 접수는 온라인 학교를 통해서만 됩니다.</div></div>
+  <div class="rowcard"><div class="k">영국 응시 · 체류비 400~600만</div>
+    <div class="v">킹스 자체 센터(아버가베니)와 런던 제휴 센터. 시험일이 4주에 흩어져 있습니다.</div></div>
+  <div class="rowcard"><div class="k">독일 응시 · 바젤 3시간 9분</div>
+    <div class="v">베를린 EIIET · 뮌헨 Berlitz · 라이힝엔 DBI 3곳. 체류비 50~100만 원.</div></div>
+  <p class="note">Edexcel IAL은 1·6·10월 연 3회, 유닛별 재시험 가능. Cambridge는 1월 시리즈가 없습니다.</p>
+  <a class="backtop" href="#top">목록으로 돌아가기</a>
+</section>
+
+<section id="subject">
+  <div class="sectionTitle">수학·생물·경제 3과목 기준</div>
+  <div class="rowcard">
+    <div class="k">하이그로브</div>
+    <div class="v">3과목 모두 개설 · 2년 약 4,420만 원(응시료 302만 포함) · IELTS 6.5</div>
+  </div>
+  <div class="rowcard">
+    <div class="k">킹스 인터하이</div>
+    <div class="v">3과목 모두 개설 · 2년 약 2,960만 원 · 공식 성적 커트라인 없음</div>
+  </div>
+  <div class="rowcard">
+    <div class="k">월지 홀 옥스퍼드</div>
+    <div class="v">3과목 모두 개설 · 2년 약 1,115만 원 · 성적 커트라인 없음</div>
+  </div>
+  <div class="rowcard">
+    <div class="k">미네르바 버추얼</div>
+    <div class="v">3과목 모두 개설 · 2년 약 3,580만 원 · IGCSE 5과목 5등급, 수학 7등급</div>
+  </div>
+  <div class="rowcard">
+    <div class="k">캠브리지 홈스쿨</div>
+    <div class="v">3과목 모두 개설 · 2년 약 3,840만 원 + 생물 실기 응시비 · 과목별 IGCSE 7등급</div>
+  </div>
+  <div class="rowcard" style="border-color:var(--warn)">
+    <div class="k" style="color:var(--warn)">NEC · 경제 미개설</div>
+    <div class="v">수학·물리·화학·생물만 있어 경제가 없습니다. 셋 중 둘만 되면 2년 약 650만 원으로 가장 저렴합니다.</div>
+  </div>
+  <p class="note">응시료는 국내 센터 기준 3과목 18유닛 약 302만 원(KII 요율)을 더한 값입니다. 영국·독일 응시는 체류비가 따로 붙습니다.</p>
+  <a class="backtop" href="#top">목록으로 돌아가기</a>
+</section>
+
+<section id="papers">
+  <div class="sectionTitle">무료 기출문제 · 바로 다운로드</div>
+
+  <div class="rowcard" style="background:var(--accent-soft);border-color:transparent">
+    <div class="k">시험이 두 종류예요</div>
+    <div class="v">Edexcel IAL은 유닛별로 1·6·10월에 나눠 치르고, Cambridge는 2년 뒤 5·6월에 한 번에 칩니다. 아래에서 학교에 맞는 쪽을 여시면 됩니다.</div>
+  </div>
+
+  <div class="sectionTitle">Cambridge (CAIE)</div>
+  <a class="card" href="https://pastpapers.papacambridge.com/papers/caie/as-and-a-level-mathematics-9709">
+    <div class="top"><h2>수학 9709</h2><span class="price">열기</span></div>
+    <p>Papacambridge · 문제지·답안·등급기준 PDF 무료</p>
+  </a>
+  <a class="card" href="https://pastpapers.papacambridge.com/papers/caie/as-and-a-level-biology-9700">
+    <div class="top"><h2>생물 9700</h2><span class="price">열기</span></div>
+    <p>Papacambridge · 문제지·답안·등급기준 PDF 무료</p>
+  </a>
+  <a class="card" href="https://pastpapers.papacambridge.com/papers/caie/as-and-a-level-economics-9708">
+    <div class="top"><h2>경제 9708</h2><span class="price">열기</span></div>
+    <p>Papacambridge · 문제지·답안·등급기준 PDF 무료</p>
+  </a>
+
+  <div class="sectionTitle">Edexcel IAL (유닛별)</div>
+  <a class="card" href="https://www.physicsandmathstutor.com/biology-revision/a-level-edexcel-ial/">
+    <div class="top"><h2>생물 IAL</h2><span class="price">열기</span></div>
+    <p>Physics &amp; Maths Tutor · 유닛별 기출·답안·해설 무료</p>
+  </a>
+  <a class="card" href="https://www.physicsandmathstutor.com/past-papers/a-level-economics/edexcel-unit-1/">
+    <div class="top"><h2>경제 IAL</h2><span class="price">열기</span></div>
+    <p>Physics &amp; Maths Tutor · 유닛별 기출·답안 무료</p>
+  </a>
+  <a class="card" href="https://www.physicsandmathstutor.com/past-papers/">
+    <div class="top"><h2>수학 IAL</h2><span class="price">열기</span></div>
+    <p>Physics &amp; Maths Tutor 전체 목록에서 Edexcel IAL 수학을 고르세요</p>
+  </a>
+
+  <p class="note">모두 회원가입 없이 내려받을 수 있는 곳입니다. 파일은 PDF라서 아이폰 파일 앱에 저장됩니다.</p>
+  <a class="backtop" href="#top">목록으로 돌아가기</a>
+</section>
+
+<section class="detail" id="s-highgrove">
+  <a class="back" href="#top">← 목록</a>
+  <h2>하이그로브 에듀케이션</h2>
+  <div class="rowcard" style="background:var(--accent-soft);border-color:transparent">
+    <div class="v" style="font-weight:800">2년 약 4,120만 원</div></div>
+  <div class="rowcard"><div class="k">학비</div><div class="v">연 £11,750(약 2,060만 원), 10개월 분납 가능. 예치금 £1,270은 반환됩니다.</div></div>
+  <div class="rowcard"><div class="k">수업·시간표</div><div class="v">과목당 주 2회 45분 라이브 + 자습 5회(플립러닝). 오전반·오후반 선택.</div></div>
+  <div class="rowcard"><div class="k">시험</div><div class="v">전 과목 Edexcel International A Level. 1·6·10월 시리즈, 유닛 단위 재시험.</div></div>
+  <div class="rowcard"><div class="k">응시 장소</div><div class="v">피어슨 재택 원격감독을 지원하고 시험 센터도 알선합니다.</div></div>
+  <div class="rowcard"><div class="k">위치</div><div class="v">영국. 구 해로우 스쿨 온라인이 2024년 재출범한 학교.</div></div>
+  <div class="rowcard"><div class="k">입학 조건</div><div class="v">IELTS 6.5 요구.</div></div>
+  <div class="rowcard"><div class="k">성적</div><div class="v">2024년 A* 50%, A*~B 88%.</div></div>
+  <div class="rowcard"><div class="k">좋은 점</div><ul class="clean"><li>전 과목 IAL 통일로 원격감독 길이 열려 있음</li><li>확인된 후보 중 성적이 가장 좋음</li></ul></div>
+  <div class="rowcard"><div class="k">아쉬운 점</div><ul class="clean"><li>2년 4,100만 원대로 학비 부담이 가장 큼</li><li>입학에 IELTS 6.5 요구</li></ul></div>
+  <a class="back" href="#top">← 목록</a>
+</section>
+
+<section class="detail" id="s-kings">
+  <a class="back" href="#top">← 목록</a>
+  <h2>킹스 인터하이</h2>
+  <div class="rowcard" style="background:var(--accent-soft);border-color:transparent">
+    <div class="v" style="font-weight:800">연 약 1,331만 원</div></div>
+  <div class="rowcard"><div class="k">학비</div><div class="v">연 £7,585 + 등록 £100. 해외 거주자도 10개월 분납 가능(예치금 £1,000 반환).</div></div>
+  <div class="rowcard"><div class="k">수업·시간표</div><div class="v">과목당 주 3회 40분, 3과목 합쳐 주 6시간. GMT+7 시간표를 고르면 한국 10:30~19:30.</div></div>
+  <div class="rowcard"><div class="k">시험</div><div class="v">수학·경제는 Cambridge, 생물만 Edexcel IAL. 보드가 섞여 있습니다.</div></div>
+  <div class="rowcard"><div class="k">응시 장소</div><div class="v">영국 자체 센터(아버가베니)와 런던 제휴 센터, 또는 사립 응시자로 각자 센터.</div></div>
+  <div class="rowcard"><div class="k">위치</div><div class="v">영국. 온라인.</div></div>
+  <div class="rowcard"><div class="k">입학 조건</div><div class="v">공식 커트라인 없음(4과목·심화수학 선택 시 7등급 권장).</div></div>
+  <div class="rowcard"><div class="k">유의</div><div class="v">트러스트파일러 4.2(994건). 사무국 응답 지연·환불 분쟁 반복.</div></div>
+  <div class="rowcard"><div class="k">좋은 점</div><ul class="clean"><li>교사가 진행하는 실시간 수업이 있음</li><li>동남아 시간대 시간표로 한국 낮 수업 가능</li></ul></div>
+  <div class="rowcard"><div class="k">아쉬운 점</div><ul class="clean"><li>3과목 라이브가 주 6시간뿐</li><li>보드가 섞여 시험 준비가 나뉨</li><li>행정 응답 지연 후기</li></ul></div>
+  <a class="back" href="#top">← 목록</a>
+</section>
+
+<section class="detail" id="s-wolsey">
+  <a class="back" href="#top">← 목록</a>
+  <h2>월지 홀 옥스퍼드</h2>
+  <div class="rowcard" style="background:var(--accent-soft);border-color:transparent">
+    <div class="v" style="font-weight:800">2년 약 813만 원</div></div>
+  <div class="rowcard"><div class="k">학비</div><div class="v">3과목 2년 £4,635(약 813만 원). 25% 선납 + 6회 분납.</div></div>
+  <div class="rowcard"><div class="k">수업·시간표</div><div class="v">라이브 수업 없음. 1:1 튜터 첨삭과 담당 매니저 월별 점검. 시간대 제약 없음.</div></div>
+  <div class="rowcard"><div class="k">시험</div><div class="v">CAIE 중심, 생물은 Edexcel IAL. 사립 응시자로 센터 접수.</div></div>
+  <div class="rowcard"><div class="k">응시 장소</div><div class="v">Pearson 가상센터 인증으로 일부 과목 원격감독을 안내.</div></div>
+  <div class="rowcard"><div class="k">위치</div><div class="v">영국 옥스퍼드. 온라인.</div></div>
+  <div class="rowcard"><div class="k">입학 조건</div><div class="v">단과형이라 성적 커트라인 없음.</div></div>
+  <div class="rowcard"><div class="k">성적</div><div class="v">A*~C 67%. Ofsted·ISI 검사 없음.</div></div>
+  <div class="rowcard"><div class="k">좋은 점</div><ul class="clean"><li>가장 저렴한 정규 등록형</li><li>추천율 98%, 대입 상담관 상시</li><li>시간대 부담 없음</li></ul></div>
+  <div class="rowcard"><div class="k">아쉬운 점</div><ul class="clean"><li>라이브 수업이 없어 자기관리가 필요</li><li>성적이 후보 중 가장 낮음</li></ul></div>
+  <a class="back" href="#top">← 목록</a>
+</section>
+
+<section class="detail" id="s-minerva">
+  <a class="back" href="#top">← 목록</a>
+  <h2>미네르바 버추얼 아카데미</h2>
+  <div class="rowcard" style="background:var(--accent-soft);border-color:transparent">
+    <div class="v" style="font-weight:800">연 약 1,640만 원</div></div>
+  <div class="rowcard"><div class="k">학비</div><div class="v">연 £8,830 + VAT = £9,365(약 1,640만 원). 해외 거주자는 1년치 일시납만.</div></div>
+  <div class="rowcard"><div class="k">수업·시간표</div><div class="v">자습 60% + 실시간 40%. 하루 2~3과목, 반 22명 이하, 주 1회 1:1 멘토. 영국 시간 고정.</div></div>
+  <div class="rowcard"><div class="k">시험</div><div class="v">Edexcel·CAIE·OCR IAL. 예상성적과 UCAS 추천서 발급.</div></div>
+  <div class="rowcard"><div class="k">응시 장소</div><div class="v">세 과목 모두 원격감독 응시가 가능하다고 답변(피어슨 본사 답변과 엇갈림).</div></div>
+  <div class="rowcard"><div class="k">위치</div><div class="v">영국. 온라인.</div></div>
+  <div class="rowcard"><div class="k">입학 조건</div><div class="v">IGCSE 5과목 5등급 이상(영어·수학 통과), 선택과목 6등급, 수학 7등급.</div></div>
+  <div class="rowcard"><div class="k">성적</div><div class="v">2024-06 Ofsted 통과. 후기는 28건뿐.</div></div>
+  <div class="rowcard"><div class="k">좋은 점</div><ul class="clean"><li>원격감독 가능하다고 답한 유일한 곳</li><li>예상성적·추천서 제공</li></ul></div>
+  <div class="rowcard"><div class="k">아쉬운 점</div><ul class="clean"><li>영국 시간 고정이라 한국은 늦은 밤</li><li>해외는 일시납만 가능</li></ul></div>
+  <a class="back" href="#top">← 목록</a>
+</section>
+
+<section class="detail" id="s-chs">
+  <a class="back" href="#top">← 목록</a>
+  <h2>캠브리지 홈스쿨 온라인</h2>
+  <div class="rowcard" style="background:var(--accent-soft);border-color:transparent">
+    <div class="v" style="font-weight:800">연 약 1,922만 원</div></div>
+  <div class="rowcard"><div class="k">학비</div><div class="v">연 £10,950(약 1,922만 원), 일시납만.</div></div>
+  <div class="rowcard"><div class="k">수업·시간표</div><div class="v">라이브 수업이 영국 9~16시 고정 → 한국 밤 6시~새벽 1시. 수업 중 카메라 필수.</div></div>
+  <div class="rowcard"><div class="k">시험</div><div class="v">CAIE만. AS를 나눠 가르치지 않아 2년 뒤 5·6월에 한 번에 응시.</div></div>
+  <div class="rowcard"><div class="k">응시 장소</div><div class="v">과학 실기는 센터 실험실이 필요해 국내 응시가 막힙니다. 시험 센터는 가정이 직접 확보·부담.</div></div>
+  <div class="rowcard"><div class="k">위치</div><div class="v">영국. 온라인.</div></div>
+  <div class="rowcard"><div class="k">입학 조건</div><div class="v">과목별 IGCSE 7등급(A) 이상.</div></div>
+  <div class="rowcard"><div class="k">좋은 점</div><ul class="clean"><li>UCAS 등록, 예상성적·보고서 제공</li><li>체계적인 영국식 정규 과정</li></ul></div>
+  <div class="rowcard"><div class="k">아쉬운 점</div><ul class="clean"><li>1월 시리즈가 없어 시험 기회가 적음</li><li>과학 실기 때문에 해외 응시 부담</li><li>한국 시간과 정면 충돌</li></ul></div>
+  <a class="back" href="#top">← 목록</a>
+</section>
+
+<section class="detail" id="s-nec">
+  <a class="back" href="#top">← 목록</a>
+  <h2>NEC</h2>
+  <div class="rowcard" style="background:var(--accent-soft);border-color:transparent">
+    <div class="v" style="font-weight:800">2년 약 386만 원</div></div>
+  <div class="rowcard"><div class="k">학비</div><div class="v">과목당 £730(24개월 과정 전체). 3과목이면 10% 할인되어 약 347만 원.</div></div>
+  <div class="rowcard"><div class="k">수업·시간표</div><div class="v">자습 중심 + 1:1 튜터. 코어프랙티컬 18개 자료 제공.</div></div>
+  <div class="rowcard"><div class="k">시험</div><div class="v">Edexcel IAL. 개설은 수학·물리·화학·생물 4과목.</div></div>
+  <div class="rowcard"><div class="k">응시 장소</div><div class="v">사립 응시자로 국내 센터(YMK·KII·edm) 접수.</div></div>
+  <div class="rowcard"><div class="k">위치</div><div class="v">영국. 온라인.</div></div>
+  <div class="rowcard"><div class="k">입학 조건</div><div class="v">단과형이라 커트라인 없음.</div></div>
+  <div class="rowcard"><div class="k">좋은 점</div><ul class="clean"><li>2년 386만 원으로 가장 저렴</li><li>과목 단위로 골라 살 수 있음</li></ul></div>
+  <div class="rowcard"><div class="k">아쉬운 점</div><ul class="clean"><li>예상성적·학교 추천서가 약함</li><li>라이브 수업이 없어 혼자 해야 함</li></ul></div>
+  <a class="back" href="#top">← 목록</a>
+</section>
+
+<p class="foot">학비는 2026/27 공식 요금, 1£≈1,750원 환산. 응시료는 별도. 2026-11-20 조사 기준이며 일부는 회신 대기 중입니다.</p>
+
+</main>
+</body>
+</html>
